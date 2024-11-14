@@ -1,0 +1,89 @@
+import hashlib
+import json
+import os
+
+# Fonction d'inscription
+def signup():
+    username = input("Entrez votre nom d'utilisateur : ")
+    pwd = input("Entrez votre mot de passe : ")
+    conf_pwd = input("Confirmez votre mot de passe : ")
+
+    if conf_pwd == pwd:
+        # Créer un hash MD5 du mot de passe
+        enc = conf_pwd.encode()
+        hash1 = hashlib.md5(enc).hexdigest()
+
+        # Sauvegarder les données dans un fichier JSON
+        user_data = {
+            "username": username,
+            "password": hash1
+        }
+
+        # Lire les utilisateurs existants
+        if os.path.exists("credentials.json"):
+            with open("credentials.json", "r") as file:
+                users = json.load(file)
+        else:
+            users = []
+
+        # Ajouter le nouvel utilisateur à la liste
+        users.append(user_data)
+
+        # Sauvegarder à nouveau le fichier JSON avec les nouveaux utilisateurs
+        with open("credentials.json", "w") as file:
+            json.dump(users, file, indent=4)
+
+        print("Vous êtes inscrit avec succès !")
+    else:
+        print("Les mots de passe ne correspondent pas. Veuillez réessayer.\n")
+
+# Fonction de connexion
+def login():
+    username = input("Entrez votre nom d'utilisateur : ")
+    pwd = input("Entrez votre mot de passe : ")
+
+    # Créer un hash MD5 du mot de passe
+    auth = pwd.encode()
+    auth_hash = hashlib.md5(auth).hexdigest()
+
+    # Vérifier les identifiants avec le fichier JSON
+    try:
+        with open("credentials.json", "r") as file:
+            users = json.load(file)
+
+        # Vérifier si l'utilisateur existe et le mot de passe est correct
+        for user in users:
+            if user["username"] == username and user["password"] == auth_hash:
+                print("Connexion réussie !")
+                return
+        
+        print("Échec de la connexion. Vérifiez votre nom d'utilisateur et mot de passe.\n")
+    
+    except FileNotFoundError:
+        print("Aucun utilisateur trouvé. Veuillez vous inscrire d'abord.\n")
+
+# Menu principal
+def main():
+    while True:
+        print("********** Système de Connexion **********")
+        print("1. Inscription")
+        print("2. Connexion")
+        print("3. Quitter")
+        
+        try:
+            choice = int(input("Entrez votre choix : "))
+        except ValueError:
+            print("Choix invalide. Veuillez entrer un numéro.")
+            continue
+
+        if choice == 1:
+            signup()
+        elif choice == 2:
+            login()
+        elif choice == 3:
+            break
+        else:
+            print("Choix incorrect, essayez à nouveau.\n")
+
+if __name__ == "__main__":
+    main()
