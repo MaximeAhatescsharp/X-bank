@@ -1,5 +1,6 @@
 # File: x_bank.py
 
+import msvcrt
 import os
 import random
 import hashlib
@@ -12,7 +13,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 import plotext as plt
 import numpy as np
-
 
 init(autoreset=True)  # Ensures color reset after each output
 
@@ -138,6 +138,7 @@ class Bank:
             self.fake_loading_bar("Finalisation")
         else:
             print(Fore.LIGHTBLUE_EX + "Âge non valide! Vous devez avoir entre 13 et 123 ans.")
+        msvcrt.getch()
 
     def login(self):
         self.display_logo()
@@ -156,6 +157,7 @@ class Bank:
                     self.user_dashboard()
                 return
         print(Fore.LIGHTBLUE_EX + "Identifiants incorrects!")
+        msvcrt.getch()
 
     def admin_dashboard(self):
         while True:
@@ -204,14 +206,21 @@ class Bank:
         print(Fore.LIGHTBLUE_EX + "Utilisateur non trouvé.")
 
     def view_transactions(self):
-        user_id = input(Fore.LIGHTBLUE_EX + "Entrez l'ID de l'utilisateur: ")
-        for user in self.users:
-            if user.user_id == user_id:
-                print(Fore.LIGHTBLUE_EX + "Historique des transactions:")
-                for transaction in user.transaction_history:
-                    print(Fore.LIGHTBLUE_EX + f"{transaction['description']}: {transaction['amount']}")
-                return
-        print(Fore.LIGHTBLUE_EX + "Utilisateur non trouvé.")
+          # Module to detect key press (Windows only)
+
+        if self.current_user is None:
+            print(Fore.LIGHTRED_EX + "Aucun utilisateur connecté.")
+            return
+
+        print(Fore.LIGHTBLUE_EX + "Historique des transactions:")
+        if not self.current_user.transaction_history:
+            print(Fore.LIGHTBLUE_EX + "Aucune transaction trouvée.")
+        else:
+            for transaction in self.current_user.transaction_history:
+                print(Fore.LIGHTBLUE_EX + f"{transaction['description']}: {transaction['amount']}")
+
+        print(Fore.LIGHTBLUE_EX + "Appuyez sur une touche pour continuer...")
+        msvcrt.getch()  # Wait for key press
 
     def user_dashboard(self):
         while True:
@@ -220,7 +229,10 @@ class Bank:
             print(Fore.LIGHTBLUE_EX + "1. Investir de l'argent")
             print(Fore.LIGHTBLUE_EX + "2. Emprunter de l'argent")
             print(Fore.LIGHTBLUE_EX + "3. Voir l'historique des transactions")
-            print(Fore.LIGHTBLUE_EX + "4. Quitter")
+            print(Fore.LIGHTBLUE_EX + "4. Transférer des fonds")
+            print(Fore.LIGHTBLUE_EX + "5. Retirer de l'argent")
+            print(Fore.LIGHTBLUE_EX + "6. Afficher le solde")
+            print(Fore.LIGHTBLUE_EX + "7. Quitter")
             choice = input(Fore.LIGHTBLUE_EX + "Choisissez une option: ")
             self.clear_screen()
             if choice == "1":
@@ -230,11 +242,20 @@ class Bank:
             elif choice == "3":
                 self.view_transactions()
             elif choice == "4":
+                self.transfer_funds()
+            elif choice == "5":
+                self.withdraw_investment()
+            elif choice == "6":
+                self.show_balance()
+            elif choice == "7":
                 print(Fore.LIGHTBLUE_EX + "Déconnexion.")
                 self.current_user = None
                 break
             else:
                 print(Fore.LIGHTBLUE_EX + "Option invalide.")
+
+    def show_balance(self):
+        print(Fore.LIGHTBLUE_EX + f"Votre solde actuel est de {self.current_user.balance} euros.")
 
     def fetch_investment_data(self, ticker):
         """Simulate fetching investment data for assets with random closing prices."""
@@ -331,17 +352,22 @@ class Bank:
             return
 
         print(Fore.LIGHTBLUE_EX + "Vos investissements actuels:")
-        for idx, (asset, amount) in enumerate(self.current_user.wallet.items(), 1):
-            print(Fore.LIGHTBLUE_EX + f"{idx}. {asset}: {amount}")
+        for idx, (asset, shares) in enumerate(self.current_user.wallet.items(), 1):
+            print(Fore.LIGHTBLUE_EX + f"{idx}. {asset}: {shares} parts")
 
         choice = input(Fore.LIGHTBLUE_EX + "Choisissez un actif pour retirer de l'argent: ")
         if choice.isdigit() and 1 <= int(choice) <= len(self.current_user.wallet):
             asset = list(self.current_user.wallet.keys())[int(choice) - 1]
-            current_amount = self.current_user.wallet[asset]
+            shares = self.current_user.wallet[asset]
 
-            amount = float(input(Fore.LIGHTBLUE_EX + f"Combien voulez-vous retirer de {asset}? (max {current_amount}): "))
-            if 0 < amount <= current_amount:
-                self.current_user.wallet[asset] -= amount
+            price_per_share = self.fetch_investment_data(asset)[-1][1]  # Simulated current price
+            current_value = shares * price_per_share
+
+            amount = float(
+                input(Fore.LIGHTBLUE_EX + f"Combien voulez-vous retirer de {asset}? (max {current_value}): "))
+            if 0 < amount <= current_value:
+                shares_to_sell = amount / price_per_share
+                self.current_user.wallet[asset] -= shares_to_sell
                 if self.current_user.wallet[asset] <= 0:
                     del self.current_user.wallet[asset]  # Remove asset if fully withdrawn
                 self.current_user.balance += amount
@@ -351,6 +377,52 @@ class Bank:
                 print(Fore.LIGHTRED_EX + "Montant invalide!")
         else:
             print(Fore.LIGHTRED_EX + "Option invalide!")
+        msvcrt.getch()
+
+    def transfer_funds(self):
+        print(Fore.LIGHTBLUE_EX + "Transfert de fonds:")
+
+        # Collecte des informations de l'utilisateur
+        sender_name = input(Fore.LIGHTBLUE_EX + "Votre prénom: ")
+        sender_surname = input(Fore.LIGHTBLUE_EX + "Votre nom: ")
+        receiver_name = input(Fore.LIGHTBLUE_EX + "Prénom du destinataire: ")
+        receiver_surname = input(Fore.LIGHTBLUE_EX + "Nom du destinataire: ")
+        amount = float(input(Fore.LIGHTBLUE_EX + "Montant à transférer: "))
+
+        # Recherche des utilisateurs
+        sender = self.find_user_by_name(sender_name, sender_surname)
+        receiver = self.find_user_by_name(receiver_name, receiver_surname)
+
+        # Vérification de la validité des utilisateurs
+        if not sender or not receiver:
+            print(Fore.RED + "Nom ou prénom de l'expéditeur ou du destinataire invalide.")
+            return
+
+        # Vérification des fonds disponibles
+        if sender.balance < amount:
+            print(Fore.RED + "Fonds insuffisants.")
+            return
+
+        # Réalisation du transfert
+        sender.balance -= amount
+        receiver.balance += amount
+
+        # Enregistrement des transactions
+        sender.log_transaction(f"Transfert à {receiver.name} {receiver.surname}", -amount)
+        receiver.log_transaction(f"Transfert de {sender.name} {sender.surname}", amount)
+
+        # Sauvegarde des données
+        self.save_users()
+
+        # Confirmation du transfert
+        print(Fore.GREEN + f"Transfert réussi! {amount} euros transférés de {sender.name} à {receiver.name}.")
+        msvcrt.getch()
+
+    def find_user_by_name(self, name, surname):
+        for user in self.users:
+            if user.name == name and user.surname == surname:
+                return user
+        return None
 
     def start_loan_repayment_thread(self, user):
         def repay_loan():
@@ -426,6 +498,7 @@ class Bank:
 
         # Start the repayment process
         self.start_loan_repayment_thread(self.current_user)
+        msvcrt.getch()
 
 
 
