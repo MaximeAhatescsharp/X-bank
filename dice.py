@@ -150,9 +150,9 @@ class StakeDiceGame:
         """Calculate the reward based on the chance."""
         # Slightly less than bet amount at 50%
         if chance == 50:
-            return self.bet_amount * 0.9
+            return self.bet_amount * 0.95
         if chance != 0:
-            return (self.bet_amount / (chance / 105)) / 2
+            return (self.bet_amount / (chance / 95)) / 2
         else:
             return 0
 
