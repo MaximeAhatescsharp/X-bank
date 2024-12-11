@@ -6,13 +6,18 @@ import random
 import hashlib
 import json
 import time
+import sys
 import threading
-import yfinance as yf
+import pygame
 from colorama import Fore, Style, init
-import pandas as pd
 from datetime import datetime, timedelta
-import plotext as plt
-import numpy as np
+#import plotext as plt
+
+
+
+
+
+
 
 init(autoreset=True)  # Ensures color reset after each output
 
@@ -56,8 +61,8 @@ class Bank:
         self.loan_threads = {}
 
     def load_users(self):
-        if os.path.exists("credentials.json"):
-            with open("credentials.json", "r") as file:
+        if os.path.exists("files/credentials.json"):
+            with open("files/credentials.json", "r") as file:
                 users_data = json.load(file)
                 self.users = [User.from_dict(user) for user in users_data]
         else:
@@ -82,11 +87,11 @@ class Bank:
         logo = f"""
         {Fore.LIGHTBLUE_EX}██╗  ██╗    ██████╗  █████╗ ███╗   ██╗██╗  ██╗
         ╚██╗██╔╝    ██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝
-         ╚███╔╝     ██████╔╝███████║██╔██╗ ██║█████╔╝ 
-         ██╔██╗     ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗ 
+         ╚███╔╝     ██████╔╝███████║██╔██╗ ██║█████╔╝
+         ██╔██╗     ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗
         ██╔╝ ██╗    ██████╔╝██║  ██║██║ ╚████║██║  ██╗
         ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
-                                              
+
         Welcome to {self.name}!{Style.RESET_ALL}
         """
         print(logo)
@@ -232,7 +237,8 @@ class Bank:
             print(Fore.LIGHTBLUE_EX + "4. Transférer des fonds")
             print(Fore.LIGHTBLUE_EX + "5. Retirer de l'argent")
             print(Fore.LIGHTBLUE_EX + "6. Afficher le solde")
-            print(Fore.LIGHTBLUE_EX + "7. Quitter")
+            print(Fore.LIGHTBLUE_EX + "7. Jouer aux Mines")
+            print(Fore.LIGHTBLUE_EX + "8. Quitter")
             choice = input(Fore.LIGHTBLUE_EX + "Choisissez une option: ")
             self.clear_screen()
             if choice == "1":
@@ -248,6 +254,12 @@ class Bank:
             elif choice == "6":
                 self.show_balance()
             elif choice == "7":
+                from mines import run_game
+                game = run_game(self.current_user.balance / 93565)
+                game.run()  # Explicitly start the game loop
+                self.current_user.balance = game.balance  # Update balance after the game
+                self.save_users()
+            elif choice == "8":
                 print(Fore.LIGHTBLUE_EX + "Déconnexion.")
                 self.current_user = None
                 break
@@ -503,6 +515,8 @@ class Bank:
 
 
 
-if __name__ == "__main__":
-    bank = Bank()
-    bank.main_menu()
+
+
+
+bank = Bank()
+bank.main_menu()
