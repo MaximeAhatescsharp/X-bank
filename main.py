@@ -69,7 +69,7 @@ class Bank:
             self.users = []
 
     def save_users(self):
-        with open("credentials.json", "w") as file:
+        with open("files/credentials.json", "w") as file:
             json.dump([user.to_dict() for user in self.users], file, indent=4)
 
     def clear_screen(self):
