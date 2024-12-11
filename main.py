@@ -238,7 +238,7 @@ class Bank:
             print(Fore.LIGHTBLUE_EX + "5. Retirer de l'argent")
             print(Fore.LIGHTBLUE_EX + "6. Afficher le solde")
             print(Fore.LIGHTBLUE_EX + "7. Jouer aux Mines")
-            print(Fore.LIGHTBLUE_EX + "8. Jouer aux Mines")
+            print(Fore.LIGHTBLUE_EX + "8. Jouer aux Dés")
             print(Fore.LIGHTBLUE_EX + "9. Quitter")
             choice = input(Fore.LIGHTBLUE_EX + "Choisissez une option: ")
             self.clear_screen()
@@ -262,9 +262,9 @@ class Bank:
                 self.save_users()
             elif choice == "8":
                 from dice import run_dice
-                game2 = run_dice(self.current_user.balance / 93565)
-                game2.run()  # Explicitly start the game loop
-                self.current_user.balance = game2.balance  # Update balance after the game
+                game = run_dice(self.current_user.balance / 93565)
+                game.run()  # Explicitly start the game loop
+                self.current_user.balance = game.balance  # Update balance after the game
                 self.save_users()
             elif choice == "9":
                 print(Fore.LIGHTBLUE_EX + "Déconnexion.")
@@ -275,6 +275,8 @@ class Bank:
 
     def show_balance(self):
         print(Fore.LIGHTBLUE_EX + f"Votre solde actuel est de {self.current_user.balance} euros.")
+        print(Fore.LIGHTBLUE_EX + f"Appuyez sur une touche pour continuer")
+        msvcrt.getch()
 
     def fetch_investment_data(self, ticker):
         """Simulate fetching investment data for assets with random closing prices."""
@@ -415,11 +417,16 @@ class Bank:
         # Vérification de la validité des utilisateurs
         if not sender or not receiver:
             print(Fore.RED + "Nom ou prénom de l'expéditeur ou du destinataire invalide.")
+            print(Fore.LIGHTBLUE_EX + f"Appuyez sur une touche pour continuer")
+            msvcrt.getch()
             return
 
         # Vérification des fonds disponibles
         if sender.balance < amount:
             print(Fore.RED + "Fonds insuffisants.")
+            print(Fore.LIGHTBLUE_EX + f"Appuyez sur une touche pour continuer")
+            msvcrt.getch()
+
             return
 
         # Réalisation du transfert
@@ -446,7 +453,7 @@ class Bank:
     def start_loan_repayment_thread(self, user):
         def repay_loan():
             while True:
-                time.sleep(30)  # Simulate one month in 30 seconds for demonstration
+                time.sleep(300)  # Simulate one month in 30 seconds for demonstration
                 with threading.Lock():  # Thread-safe access to user data
                     if user.loans.get("Prêt", 0) <= 0:
                         print(Fore.LIGHTBLUE_EX + "Le prêt est entièrement remboursé.")
@@ -478,11 +485,15 @@ class Bank:
         age = self.current_user.age
         if age < 18:
             print(Fore.LIGHTBLUE_EX + "Désolé, vous devez avoir au moins 18 ans pour demander un prêt.")
+            print(Fore.LIGHTBLUE_EX + f"Appuyez sur une touche pour continuer")
+            msvcrt.getch()
             return
 
         revenu_stable = input(Fore.LIGHTBLUE_EX + "Avez-vous une source de revenus stable? (oui/non): ").lower()
         if revenu_stable != "oui":
             print(Fore.LIGHTBLUE_EX + "Désolé, nous ne pouvons pas approuver un prêt sans une source de revenus stable.")
+            print(Fore.LIGHTBLUE_EX + f"Appuyez sur une touche pour continuer")
+            msvcrt.getch()
             return
 
         print(Fore.LIGHTBLUE_EX + "Vérification de votre score de confiance...")
@@ -497,11 +508,15 @@ class Bank:
         montant_max = self.current_user.trust * 10
         if montant_pret > montant_max:
             print(Fore.LIGHTBLUE_EX + f"Désolé, le montant maximum que vous pouvez emprunter est de {montant_max}.")
+            print(Fore.LIGHTBLUE_EX + f"Appuyez sur une touche pour continuer")
+            msvcrt.getch()
             return
 
         periode_remboursement = int(input(Fore.LIGHTBLUE_EX + "En combien de mois souhaitez-vous rembourser le prêt? (max 12): "))
         if periode_remboursement > 12 or periode_remboursement <= 0:
             print(Fore.LIGHTBLUE_EX + "La période de remboursement doit être entre 1 et 12 mois.")
+            print(Fore.LIGHTBLUE_EX + f"Appuyez sur une touche pour continuer")
+            msvcrt.getch()
             return
 
         mensualite = round(montant_pret / periode_remboursement, 2)
