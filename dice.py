@@ -152,7 +152,7 @@ class StakeDiceGame:
         if chance == 50:
             return self.bet_amount * 0.9
         if chance != 0:
-            return self.bet_amount / (chance / 100)
+            return (self.bet_amount / (chance / 105)) / 2
         else:
             return 0
 
