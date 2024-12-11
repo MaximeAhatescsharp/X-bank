@@ -198,12 +198,14 @@ class MinesGame:
         else:
             diamond_sound.play()
             self.revealed_cells += 1
-            self.current_reward = round(self.bet_amount * (1.05 ** self.revealed_cells), 8)
+            # Apply conservative multiplier
+            mine_multiplier = 1 + (self.mine_count / (MAX_MINES))
+            self.current_reward = round(self.bet_amount * (1.01 + (mine_multiplier))  ** (self.revealed_cells / 5), 8)
 
         if self.balance <= 0:
             print("Balance is zero. Game over!")
             pygame.quit()
-            sys.exit()
+
 
     def draw(self, screen):
         screen.fill(BG_COLOR)
@@ -218,21 +220,35 @@ class MinesGame:
 
         pygame.draw.rect(screen, HIDDEN_COLOR, (panel_x, 0, panel_width, HEIGHT))
 
+        # Define consistent padding and spacing
+        padding = 20
+        line_height = 40  # Height between lines of text
+        button_spacing = 10  # Space between buttons
+
+        # Draw text elements
         balance_text = f"Balance: {self.convert_currency(self.balance):.2f} {self.currency}"
         bet_text = f"Bet Amount: {self.convert_currency(self.bet_amount):.2f} {self.currency}"
         reward_text = f"Reward: {self.convert_currency(self.current_reward):.2f} {self.currency}"
         status_text = f"Revealed: {self.revealed_cells} | Mines: {self.mine_count}"
+        multiplier_text = f"Current Multiplier: {1.01 + (self.mine_count / (2 * MAX_MINES)):.3f}"
 
-        y_offset = 80
-        spacing = 50
-        for idx, text in enumerate([balance_text, bet_text, reward_text, status_text]):
+        y_offset = padding
+        for text in [balance_text, bet_text, reward_text, status_text, multiplier_text]:
             text_surface = font.render(text, True, TEXT_COLOR)
-            screen.blit(text_surface, (panel_x + 20, y_offset + idx * spacing))
+            screen.blit(text_surface, (panel_x + padding, y_offset))
+            y_offset += line_height
 
+        # Draw dropdown
+        self.dropdown.rect.y = y_offset + padding  # Position dropdown below text
         self.dropdown.draw(screen)
+        y_offset += self.dropdown.rect.height + padding
 
+        # Draw buttons with even spacing
         for button in self.buttons.values():
+            button.rect.y = y_offset
+            button.rect.x = panel_x + padding
             button.draw(screen)
+            y_offset += button.rect.height + button_spacing
 
     def cashout(self):
         self.balance += self.current_reward
