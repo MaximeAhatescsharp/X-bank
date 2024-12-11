@@ -310,6 +310,6 @@ class MinesGame:
 
         pygame.quit()
 
-def run_game(balance):
+def run_mines(balance):
     """Create and return a MinesGame instance."""
     return MinesGame(balance)
