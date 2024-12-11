@@ -238,7 +238,8 @@ class Bank:
             print(Fore.LIGHTBLUE_EX + "5. Retirer de l'argent")
             print(Fore.LIGHTBLUE_EX + "6. Afficher le solde")
             print(Fore.LIGHTBLUE_EX + "7. Jouer aux Mines")
-            print(Fore.LIGHTBLUE_EX + "8. Quitter")
+            print(Fore.LIGHTBLUE_EX + "8. Jouer aux Mines")
+            print(Fore.LIGHTBLUE_EX + "9. Quitter")
             choice = input(Fore.LIGHTBLUE_EX + "Choisissez une option: ")
             self.clear_screen()
             if choice == "1":
@@ -254,12 +255,18 @@ class Bank:
             elif choice == "6":
                 self.show_balance()
             elif choice == "7":
-                from mines import run_game
-                game = run_game(self.current_user.balance / 93565)
+                from mines import run_mines
+                game = run_mines(self.current_user.balance / 93565)
                 game.run()  # Explicitly start the game loop
                 self.current_user.balance = game.balance  # Update balance after the game
                 self.save_users()
             elif choice == "8":
+                from dice import run_dice
+                game2 = run_dice(self.current_user.balance / 93565)
+                game2.run()  # Explicitly start the game loop
+                self.current_user.balance = game2.balance  # Update balance after the game
+                self.save_users()
+            elif choice == "9":
                 print(Fore.LIGHTBLUE_EX + "Déconnexion.")
                 self.current_user = None
                 break
