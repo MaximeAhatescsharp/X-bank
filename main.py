@@ -258,13 +258,13 @@ class Bank:
                 from mines import run_mines
                 game = run_mines(self.current_user.balance / 93565)
                 game.run()  # Explicitly start the game loop
-                self.current_user.balance = game.balance  # Update balance after the game
+                self.current_user.balance = game.balance * 93565 # Update balance after the game
                 self.save_users()
             elif choice == "8":
                 from dice import run_dice
                 game = run_dice(self.current_user.balance / 93565)
                 game.run()  # Explicitly start the game loop
-                self.current_user.balance = game.balance  # Update balance after the game
+                self.current_user.balance = game.balance *93565 # Update balance after the game
                 self.save_users()
             elif choice == "9":
                 print(Fore.LIGHTBLUE_EX + "Déconnexion.")
